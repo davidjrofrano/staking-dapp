@@ -69,7 +69,7 @@ const StakeForm: FC = () => {
         address: STAKING_CONTRACT,
         abi: stakingAbi,
         functionName: "stake",
-        args: [parseUnits(amount, decimals), stakeDuration],
+        args: [parseUnits(amount, decimals), stakeDuration * 86400],
       });
 
       const receipt = await web3Client.waitForTransactionReceipt({ hash });
