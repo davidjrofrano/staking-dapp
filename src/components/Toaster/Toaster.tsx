@@ -82,7 +82,7 @@ const Toaster: FC = () => {
               )}
             </Stack>
             {toast.action && (
-              <Toast.ActionTrigger onClick={toast.action.onClick}>
+              <Toast.ActionTrigger onClick={toast.action.onClick} px={3}>
                 {toast.action.label}
               </Toast.ActionTrigger>
             )}

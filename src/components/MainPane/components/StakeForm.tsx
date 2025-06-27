@@ -1,68 +1,100 @@
-import { useCallback, useEffect, useState, type FC } from "react";
+import { useEffect, useState, type FC } from "react";
 
 import { Button, Input, Text, VStack, Flex, Box } from "@chakra-ui/react";
-import { erc20Abi, formatUnits } from "viem";
+import { erc20Abi, parseUnits } from "viem";
 import { useAccount } from "wagmi";
 
-import { useWeb3Client } from "@/hooks/useWeb3Client";
+import { useNotify, useTimer, useTokenInfo, useWeb3Client } from "@/hooks";
 import { stakingAbi } from "@/utils/abis/staking.abi";
 import { STAKING_CONTRACT, STAKING_TOKEN } from "@/utils/constants";
+import { ellipsis } from "@/utils/formatters";
 
 const StakeForm: FC = () => {
-  const { walletClient, web3Client } = useWeb3Client();
   const { address, chain } = useAccount();
-  const [balance, setBalance] = useState<string>("0");
+  const { walletClient, web3Client } = useWeb3Client();
+  const { decimals, balance, allowance, fetchTokenInfo } = useTokenInfo(
+    web3Client,
+    address,
+    STAKING_TOKEN,
+    STAKING_CONTRACT,
+  );
+  const { timer } = useTimer();
+  const { notifyError, notifySuccess } = useNotify();
+
   const [amount, setAmount] = useState<string>("");
   const [stakeDuration, setStakeDuration] = useState<number>(30); // Default to 30 days
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (address) {
-      fetchBalance();
+      fetchTokenInfo();
     }
-  }, [address]);
-
-  const fetchBalance = useCallback(async () => {
-    if (!address) return;
-
-    try {
-      const decimals = await web3Client.readContract({
-        address: STAKING_TOKEN,
-        abi: erc20Abi,
-        functionName: "decimals",
-      });
-
-      const bal = await web3Client.readContract({
-        address: STAKING_TOKEN,
-        abi: erc20Abi,
-        functionName: "balanceOf",
-        args: [address],
-      });
-
-      setBalance(formatUnits(bal, decimals));
-    } catch (error) {
-      console.error("Error fetching balance:", error);
-    }
-  }, [address]);
+  }, [address, timer]);
 
   const handleStake = async () => {
     if (!amount || !address || !chain) return;
 
+    await fetchTokenInfo();
+
+    const isRoundInProgress = await web3Client.readContract({
+      address: STAKING_CONTRACT,
+      abi: stakingAbi,
+      functionName: "isRoundInProgress",
+    });
+
+    if (!isRoundInProgress) {
+      return notifyError({
+        title: "Alert:",
+        message: "No round in progress. Please try again later.",
+      });
+    }
+
     setIsLoading(true);
+
     try {
-      await walletClient.writeContract({
+      if (parseUnits(amount, decimals) > parseUnits(allowance, decimals)) {
+        await walletClient.writeContract({
+          chain,
+          account: address,
+          address: STAKING_TOKEN,
+          abi: erc20Abi,
+          functionName: "approve",
+          args: [STAKING_CONTRACT, parseUnits(amount, decimals)],
+        });
+      }
+
+      const hash = await walletClient.writeContract({
         chain,
         account: address,
         address: STAKING_CONTRACT,
         abi: stakingAbi,
         functionName: "stake",
-        args: [amount, stakeDuration],
+        args: [parseUnits(amount, decimals), stakeDuration],
       });
-      console.log("Staking amount:", amount, "for duration:", stakeDuration, "days");
+
+      const receipt = await web3Client.waitForTransactionReceipt({ hash });
+      if (receipt.status === "success") {
+        notifySuccess({
+          title: "Success:",
+          message: "Staking successfully done. " + ellipsis(hash),
+          action: {
+            label: `View on ${chain.name}`,
+            onClick: () => {
+              window.open(`${chain.blockExplorers?.default?.url}/tx/${hash}`, "_blank");
+            },
+          },
+        });
+      } else {
+        notifyError({
+          title: "Error:",
+          message: "Staking failed. " + ellipsis(hash),
+        });
+      }
     } catch (error) {
       console.error("Error staking:", error);
     } finally {
       setIsLoading(false);
+      await fetchTokenInfo();
     }
   };
 

@@ -19,7 +19,7 @@ export const pulseTestnet = defineChain({
   blockExplorers: {
     default: {
       name: "Scan",
-      url: "https://scan.v4.testnet.pulsechain.com",
+      url: "https://scan.v4.testnet.pulsechain.com/#",
     },
   },
 });
@@ -43,7 +43,7 @@ export const pulse = defineChain({
   blockExplorers: {
     default: {
       name: "Scan",
-      url: "https://scan.pulsechainfoundation.org/",
+      url: "https://scan.pulsechainfoundation.org/#",
     },
   },
 });

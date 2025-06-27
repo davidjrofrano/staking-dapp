@@ -5,8 +5,7 @@ import { HStack, Heading } from "@chakra-ui/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 
-import { useWeb3Client } from "@/hooks/useWeb3Client";
-import { useWindowSize } from "@/hooks/useWindowSize";
+import { useWeb3Client, useWindowSize } from "@/hooks";
 import { pulse } from "@/utils/chains";
 
 import { DarkModeButton } from "../DarkModeButton";

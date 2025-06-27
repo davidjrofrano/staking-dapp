@@ -11,8 +11,6 @@ import {
 
 import { pulse, pulseTestnet } from "@/utils/chains";
 
-export type ColorMode = "light" | "dark";
-
 export interface UseWeb3ClientReturn {
   web3Client: PublicClient;
   walletClient: WalletClient;
