@@ -106,6 +106,9 @@ const StakeForm: FC = () => {
     setAmount("");
   };
 
+  const years = [3, 6, 9, 12];
+  const days = [1, 1000, 2000, 3000, 4000, 5000, 5555];
+
   return (
     <VStack gap={4} align="stretch">
       <Text fontSize="sm" color="gray.500" textAlign="right">
@@ -139,35 +142,26 @@ const StakeForm: FC = () => {
         <VStack gap={2}>
           <Box position="relative" width="100%">
             <Flex justify="space-between" width="100%" fontSize="xs" color="gray.500" mb={5}>
-              <Text
-                cursor="pointer"
-                fontSize="sm"
-                fontWeight={stakeDuration === 365 ? "bold" : "normal"}
-                color={stakeDuration === 365 ? "blue.500" : "gray.500"}
-                onClick={() => setStakeDuration(365)}
-                position="absolute"
-                left="36.5%"
-                transform="translateX(-50%)"
-              >
-                1y
-              </Text>
-              <Text
-                cursor="pointer"
-                fontSize="sm"
-                fontWeight={stakeDuration === 730 ? "bold" : "normal"}
-                color={stakeDuration === 730 ? "blue.500" : "gray.500"}
-                onClick={() => setStakeDuration(730)}
-                position="absolute"
-                left="73%"
-                transform="translateX(-50%)"
-              >
-                2y
-              </Text>
+              {years.map((year) => (
+                <Text
+                  key={year}
+                  cursor="pointer"
+                  fontSize="sm"
+                  fontWeight={stakeDuration === year * 365 ? "bold" : "normal"}
+                  color={stakeDuration === year * 365 ? "blue.500" : "gray.500"}
+                  onClick={() => setStakeDuration(year * 365)}
+                  position="absolute"
+                  left={`${((year * 365 - 1) / (5555 - 1)) * 100}%`}
+                  transform="translateX(-50%)"
+                >
+                  {year}y
+                </Text>
+              ))}
             </Flex>
             <input
               type="range"
               min={1}
-              max={1000}
+              max={5555}
               value={stakeDuration}
               onChange={(e) => setStakeDuration(Number(e.target.value))}
               style={{
@@ -179,53 +173,25 @@ const StakeForm: FC = () => {
               }}
             />
           </Box>
-          <Flex justify="space-between" width="100%" fontSize="xs" color="gray.500">
-            <Text
-              cursor="pointer"
-              fontSize="sm"
-              fontWeight={stakeDuration === 1 ? "bold" : "normal"}
-              color={stakeDuration === 1 ? "blue.500" : "gray.500"}
-              onClick={() => setStakeDuration(1)}
-            >
-              1d
-            </Text>
-            <Text
-              cursor="pointer"
-              fontSize="sm"
-              fontWeight={stakeDuration === 250 ? "bold" : "normal"}
-              color={stakeDuration === 250 ? "blue.500" : "gray.500"}
-              onClick={() => setStakeDuration(250)}
-            >
-              250d
-            </Text>
-            <Text
-              cursor="pointer"
-              fontSize="sm"
-              fontWeight={stakeDuration === 500 ? "bold" : "normal"}
-              color={stakeDuration === 500 ? "blue.500" : "gray.500"}
-              onClick={() => setStakeDuration(500)}
-            >
-              500d
-            </Text>
-            <Text
-              cursor="pointer"
-              fontSize="sm"
-              fontWeight={stakeDuration === 750 ? "bold" : "normal"}
-              color={stakeDuration === 750 ? "blue.500" : "gray.500"}
-              onClick={() => setStakeDuration(750)}
-            >
-              750d
-            </Text>
-            <Text
-              cursor="pointer"
-              fontSize="sm"
-              fontWeight={stakeDuration === 1000 ? "bold" : "normal"}
-              color={stakeDuration === 1000 ? "blue.500" : "gray.500"}
-              onClick={() => setStakeDuration(1000)}
-            >
-              1000d
-            </Text>
-          </Flex>
+          <Box position="relative" width="100%" mb={5}>
+            <Flex justify="space-between" width="100%" fontSize="xs" color="gray.500">
+              {days.map((day) => (
+                <Text
+                  key={day}
+                  cursor="pointer"
+                  fontSize="sm"
+                  fontWeight={stakeDuration === day ? "bold" : "normal"}
+                  color={stakeDuration === day ? "blue.500" : "gray.500"}
+                  onClick={() => setStakeDuration(day)}
+                  position="absolute"
+                  left={`${((day - 1) / (5555 - 1)) * 100}%`}
+                  transform="translateX(-50%)"
+                >
+                  {day === 5555 ? "MAX" : `${day}d`}
+                </Text>
+              ))}
+            </Flex>
+          </Box>
         </VStack>
       </Box>
 
